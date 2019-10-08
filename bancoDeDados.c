@@ -54,7 +54,7 @@ int main(){
     struct sockaddr_in saddr = {
         .sin_family      = AF_INET,
         .sin_addr.s_addr = htonl(INADDR_ANY),
-        .sin_port        = htons(5000)
+        .sin_port        = htons(6000)
     };
 
     //Cria o socket de servidor, com os endereços padrões.
@@ -100,10 +100,6 @@ int main(){
         while(1){
             //Recebe e printa na tela os bytes da requisição do cliente.
             x = recv(client, request, sizeof request, 0);
-
-            printf("%s", request);
-
-            return -1;
 
             //Sai do loop quando o cliente não envia mais nenhum byte de requisição.
             if(x<1) break;
