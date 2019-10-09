@@ -85,6 +85,8 @@ int main(){
             //Coloca o valor do último char como o caracter especial de fim de strings, para que requisições anteriores não interfiram nas futuras.
             //int last = lastOnTheQueue - 1;
             //queue[last][strlen(request) - 1] = '\0';
+
+            memset(request, 'F', 100);
         }
 
         //Fecha a conexão com o cliente.
@@ -99,5 +101,8 @@ int main(){
 
 
 void* sendChangesToDatabase(char* requisition){
-    printf("%s\nENTREI\n", requisition);
+    if(requisition[1] != 'F'){
+        printf("%s\nENTREI\n", requisition);
+        printf("%c %c %c\n", requisition[0], requisition[2], requisition[4]);
+    }
 }

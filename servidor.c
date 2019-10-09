@@ -50,7 +50,7 @@ int main(){
     //Deixa o servidor "ouvindo" as requisições.
     listen(server, 5);
 
-    //Cria a thread que vai controlar as pthreads.
+    //Cria a thread que vai se comunicar como o banco de dados.
     //pthread_t thread;
     //pthread_create(&thread, NULL, respondRequisitions, NULL);
 
