@@ -193,21 +193,17 @@ int main(){
                 break;
         }
 
-        printf("%s", requisicaoFinal);
-        n = 0;
-        continue;
+        //printf("%s", requisicaoFinal);
+        //n = 0;
+        //continue;
 
         //Conecta o cliente ao servidor.
         connect(client, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
-        //Manda um número arbitrário de requisições (todas iguais) ao servidor. Nesse caso, são 12.
-        int i = 0;
-        while(i<12){
-            //Manda sua requisição ao servidor.
-            send(client, requisicaoFinal, (int)strlen(requisicaoFinal), 0);
-            printf("Request sent!\n");
-            i++;
-        }
+        //Manda sua requisição ao servidor.
+        send(client, requisicaoFinal, (int)strlen(requisicaoFinal), 0);
+        printf("Request sent!\n");
+
         //Zera o buffer.
         memset(requisicaoFinal, 'F', 100);
 
