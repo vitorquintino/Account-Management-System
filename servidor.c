@@ -74,17 +74,9 @@ int main(){
             //Recebe e printa na tela os bytes da requisição do cliente.
             x = recv(client, request, sizeof request, 0);
 
-            sendChangesToDatabase(request);
-
-            //Sai do loop quando o cliente não envia mais nenhum byte de requisição.
             if(x<1) break;
-
-            //Coloca a requisição na fila global.
-            //strncpy(queue[lastOnTheQueue++], request, strlen(request) - 1);
-
-            //Coloca o valor do último char como o caracter especial de fim de strings, para que requisições anteriores não interfiram nas futuras.
-            //int last = lastOnTheQueue - 1;
-            //queue[last][strlen(request) - 1] = '\0';
+            sendChangesToDatabase(request);
+            
         }
 
         //Fecha a conexão com o cliente.
@@ -117,5 +109,5 @@ void* sendChangesToDatabase(char* requisition){
 
     send(client, requisition, (int)strlen(requisition), 0);
 
-    close(client);
+    closesocket(client);
 }

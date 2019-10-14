@@ -9,10 +9,14 @@
 #include <unistd.h>
 #include <pthread.h>
 
-void* sendChangesToDatabase(char* requisition);
+char* persistChanges(char* requisition);
+void* initializeAccounts();
+int deposit(int conta, int valor);
 
 //Variáveis da fila global, utilizada para armazenar as requisições até que a thread das pthreads as recolha para uma fila local.
 char queue[1][512];
+
+int contas[10];
 
 int main(){
     
@@ -50,6 +54,8 @@ int main(){
     //Deixa o servidor "ouvindo" as requisições.
     listen(server, 5);
 
+    initializeAccounts();
+
     //Cria a thread que vai controlar as pthreads.
     //pthread_t thread;
     //pthread_create(&thread, NULL, respondRequisitions, NULL);
@@ -74,7 +80,7 @@ int main(){
             //Recebe e printa na tela os bytes da requisição do cliente.
             x = recv(client, request, sizeof request, 0);
 
-            sendChangesToDatabase(request);
+            persistChanges(request);
 
             //Sai do loop quando o cliente não envia mais nenhum byte de requisição.
             if(x<1) break;
@@ -100,9 +106,73 @@ int main(){
 
 
 
-void* sendChangesToDatabase(char* requisition){
+char* persistChanges(char* requisition){
     if(requisition[1] != 'F'){
-        printf("%s\nENTREI\n", requisition);
+        //printf("%s\nENTREI\n", requisition);
         printf("%c %c %c\n", requisition[0], requisition[2], requisition[4]);
+        
+        char repsonse[3];
+
+        int contaOrigem = -1, contaDestino = -1, valor = -1;
+        char contaOrigemRequest[100];
+        char contaDestinoRequest[100];
+        char valorRequest[100];
+
+        char function = requisition[0];
+        switch(function){
+            case 'D': ;
+                
+
+                int requisitionIterator = 2, charIterator = 0;
+                while(requisition[requisitionIterator] != '-'){
+                    contaDestinoRequest[charIterator++] = requisition[requisitionIterator++];
+                }
+                contaDestino = atoi(contaDestinoRequest);
+
+                charIterator = 0;
+                requisitionIterator++;
+
+                while(requisition[requisitionIterator] != 'F'){
+                    valorRequest[charIterator++] = requisition[requisitionIterator++];
+                }
+
+                valor = atoi(valorRequest);
+
+                int resposta = deposit(contaDestino, valor);
+
+                printf("Resposta: %d\n", resposta);
+                return "";
+                break;
+            case 'S':
+
+                break;
+            case 'T':
+
+                break;
+            case 'L':
+
+                break;
+            default:
+
+                break;
+        }
     }
+}
+
+void* initializeAccounts(){
+    int i = 0;
+    for(i = 0; i < 10; i++){
+        contas[i] = 100;
+    }
+}
+
+int deposit(int conta, int valor){
+
+    int tamanho = (int) (sizeof(contas)/sizeof(contas[0]));
+
+    printf("\n%d %d %d\n", tamanho, conta, valor);
+    if((int) (sizeof(contas)/sizeof(contas[0])) < conta){
+        return -1;
+    }
+    return 1;
 }
