@@ -9,17 +9,24 @@
 #include <unistd.h>
 #include <pthread.h>
 
-char* persistChanges(char* requisition);
+char persistChanges(char* requisition);
 void* initializeAccounts();
 int deposit(int conta, int valor);
+int withdrawal(int conta, int valor);
+int transfer(int contaOrigem, int contaDestino, int valor);
 
 //Variáveis da fila global, utilizada para armazenar as requisições até que a thread das pthreads as recolha para uma fila local.
 char queue[1][512];
 
 int contas[10];
 
+int list = 0;
+char listValue[100];
+
 int main(){
     
+    memset(listValue, 'F', 100);
+
     //Inicializa o buffer de requisição.
     char request[100];
 
@@ -56,10 +63,6 @@ int main(){
 
     initializeAccounts();
 
-    //Cria a thread que vai controlar as pthreads.
-    //pthread_t thread;
-    //pthread_create(&thread, NULL, respondRequisitions, NULL);
-
     //Loop infinito para aceitar requisições.
     while(1){
         printf("Started accepting requests.\n");
@@ -80,17 +83,22 @@ int main(){
             //Recebe e printa na tela os bytes da requisição do cliente.
             x = recv(client, request, sizeof request, 0);
 
-            persistChanges(request);
+            char resultCode = persistChanges(request);
 
             //Sai do loop quando o cliente não envia mais nenhum byte de requisição.
             if(x<1) break;
 
-            //Coloca a requisição na fila global.
-            //strncpy(queue[lastOnTheQueue++], request, strlen(request) - 1);
+            char newResponse[1];
+            newResponse[0] = resultCode;
 
-            //Coloca o valor do último char como o caracter especial de fim de strings, para que requisições anteriores não interfiram nas futuras.
-            //int last = lastOnTheQueue - 1;
-            //queue[last][strlen(request) - 1] = '\0';
+            if(list > 0){
+                send(client, listValue, x, 0);
+                list = 0;
+                memset(listValue, 'F', 100);
+            }
+            else{
+                send(client, newResponse, x, 0);
+            }
 
             memset(request, 'F', 100);
         }
@@ -106,14 +114,12 @@ int main(){
 
 
 
-char* persistChanges(char* requisition){
+char persistChanges(char* requisition){
     if(requisition[1] != 'F'){
-        //printf("%s\nENTREI\n", requisition);
         printf("%c %c %c\n", requisition[0], requisition[2], requisition[4]);
-        
-        char repsonse[3];
 
-        int contaOrigem = -1, contaDestino = -1, valor = -1;
+        int contaOrigem = -1, contaDestino = -1, valor = -1, requisitionIterator = -1, charIterator = -1, depositResponse = -1;
+        char functionResponse = 'X';
         char contaOrigemRequest[100];
         char contaDestinoRequest[100];
         char valorRequest[100];
@@ -121,9 +127,9 @@ char* persistChanges(char* requisition){
         char function = requisition[0];
         switch(function){
             case 'D': ;
-                
+                requisitionIterator = 2; 
+                charIterator = 0;
 
-                int requisitionIterator = 2, charIterator = 0;
                 while(requisition[requisitionIterator] != '-'){
                     contaDestinoRequest[charIterator++] = requisition[requisitionIterator++];
                 }
@@ -138,19 +144,95 @@ char* persistChanges(char* requisition){
 
                 valor = atoi(valorRequest);
 
-                int resposta = deposit(contaDestino, valor);
+                depositResponse = deposit(contaDestino, valor);
+                functionResponse;
 
-                printf("Resposta: %d\n", resposta);
-                return "";
+                if(depositResponse == 1){
+                    functionResponse = 'C';
+                }
+                else{
+                    functionResponse = 'E';
+                }
+                return functionResponse;
                 break;
-            case 'S':
+            case 'S': ;
+                requisitionIterator = 2;
+                charIterator = 0;
 
+                while(requisition[requisitionIterator] != '-'){
+                    contaDestinoRequest[charIterator++] = requisition[requisitionIterator++];
+                }
+                contaDestino = atoi(contaDestinoRequest);
+
+                charIterator = 0;
+                requisitionIterator++;
+
+                while(requisition[requisitionIterator] != 'F'){
+                    valorRequest[charIterator++] = requisition[requisitionIterator++];
+                }
+
+                valor = atoi(valorRequest);
+
+                depositResponse = withdrawal(contaDestino, valor);
+                functionResponse;
+
+                if(depositResponse == 1){
+                    functionResponse = 'C';
+                }
+                else{
+                    functionResponse = 'E';
+                }
+                return functionResponse;
                 break;
-            case 'T':
+            case 'T': ;
+                requisitionIterator = 2; 
+                charIterator = 0;
 
+                while(requisition[requisitionIterator] != '-'){
+                    contaOrigemRequest[charIterator++] = requisition[requisitionIterator++];
+                }
+                contaOrigem = atoi(contaOrigemRequest);
+
+                charIterator = 0;
+                requisitionIterator++;
+
+                while(requisition[requisitionIterator] != '-'){
+                    contaDestinoRequest[charIterator++] = requisition[requisitionIterator++];
+                }
+                contaDestino = atoi(contaDestinoRequest);
+
+                charIterator = 0;
+                requisitionIterator++;
+
+                while(requisition[requisitionIterator] != 'F'){
+                    valorRequest[charIterator++] = requisition[requisitionIterator++];
+                }
+
+                valor = atoi(valorRequest);
+
+                depositResponse = transfer(contaOrigem, contaDestino, valor);
+                functionResponse;
+
+                if(depositResponse == 1){
+                    functionResponse = 'C';
+                }
+                else{
+                    functionResponse = 'E';
+                }
+                return functionResponse;
                 break;
             case 'L':
+                requisitionIterator = 2; 
+                charIterator = 0;
 
+                while(requisition[requisitionIterator] != '-'){
+                    contaOrigemRequest[charIterator++] = requisition[requisitionIterator++];
+                }
+                contaOrigem = atoi(contaOrigemRequest);
+
+                printf("%d", contaOrigem);
+
+                return 'C';
                 break;
             default:
 
@@ -167,6 +249,7 @@ void* initializeAccounts(){
 }
 
 int deposit(int conta, int valor){
+    if(conta < 0 || valor < 0) return -1;
 
     int tamanho = (int) (sizeof(contas)/sizeof(contas[0]));
 
@@ -174,5 +257,45 @@ int deposit(int conta, int valor){
     if((int) (sizeof(contas)/sizeof(contas[0])) < conta){
         return -1;
     }
+
+    contas[conta - 1] = contas[conta - 1] + valor;
+
     return 1;
 }
+
+int withdrawal(int conta, int valor){
+    if(conta < 0 || valor < 0) return -1;
+
+    int tamanho = (int) (sizeof(contas)/sizeof(contas[0]));
+
+    printf("\n%d %d %d\n", tamanho, conta, valor);
+    if((int) (sizeof(contas)/sizeof(contas[0])) < conta){
+        return -1;
+    }
+
+    if(contas[conta - 1] - valor < 0){
+        return -1;
+    }
+
+    contas[conta - 1] = contas[conta - 1] - valor;
+
+    return 1;
+}
+
+int transfer(int contaOrigem, int contaDestino, int valor){
+    if(contaOrigem < 0 || contaDestino < 0 || valor < 0) return -1;
+
+    int tamanho = (int) (sizeof(contas)/sizeof(contas[0]));
+    if((int) (sizeof(contas)/sizeof(contas[0])) < contaOrigem || (int) (sizeof(contas)/sizeof(contas[0])) < contaDestino){
+        return -1;
+    }
+
+    if(contas[contaOrigem - 1] - valor < 0){
+        return -1;
+    }
+
+    contas[contaOrigem - 1] = contas[contaOrigem - 1] - valor;
+    contas[contaDestino - 1] = contas[contaDestino - 1] + valor;
+
+    return 1;
+}  

@@ -15,12 +15,6 @@
 #define MSG_LISTAGEM "4) Listagem de saldo"
 
 int main(){
-
-    /*char* a = "123";
-    int b = atoi(a);
-    printf("%d" , b);
-    return -1;*/
-
     //Inicializa os sockets do c para o windows.
     WSADATA wsa;
     WSAStartup(MAKEWORD(2,2), &wsa);
@@ -30,13 +24,6 @@ int main(){
     
     //Cria o socket do cliente, com os endereços padrões.
     client = socket(AF_INET, SOCK_STREAM, 0); 
-    if(client == -1){
-        //printf("Socket creation failed!");
-        return -1;    
-    }
-    else{
-        //printf("Socket created. Server started.\n");
-    }
 
     //Coloca o IP e a porta do servidor, baseado em variáveis padrões dos sockets.
     servaddr.sin_family = AF_INET; 
@@ -193,12 +180,11 @@ int main(){
                 break;
         }
 
-        //printf("%s", requisicaoFinal);
-        //n = 0;
-        //continue;
-
         //Conecta o cliente ao servidor.
-        connect(client, (struct sockaddr *)&servaddr, sizeof(servaddr));
+        if(connect(client, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0){
+            printf("Servidor fora do ar! Tente novamente em alguns segundos.\n");
+            continue;
+        }
 
         //Manda sua requisição ao servidor.
         send(client, requisicaoFinal, (int)strlen(requisicaoFinal), 0);
@@ -206,6 +192,11 @@ int main(){
 
         //Zera o buffer.
         memset(requisicaoFinal, 'F', 100);
+
+        char response[100];
+        int x = recv(client, response, sizeof response, 0);
+
+        printf("\nServidor: %s\n", response);
 
         //Fecha a conexão com o servidor.
         close(client);

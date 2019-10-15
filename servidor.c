@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
-void* sendChangesToDatabase(char* requisition);
+char sendChangesToDatabase(char* requisition);
 
 //Variáveis da fila global, utilizada para armazenar as requisições até que a thread das pthreads as recolha para uma fila local.
 char queue[1][512];
@@ -50,18 +50,17 @@ int main(){
     //Deixa o servidor "ouvindo" as requisições.
     listen(server, 5);
 
-    //Cria a thread que vai se comunicar como o banco de dados.
-    //pthread_t thread;
-    //pthread_create(&thread, NULL, respondRequisitions, NULL);
-
     //Loop infinito para aceitar requisições.
     while(1){
         printf("Started accepting requests.\n");
         //Zera o buffer para que em cada requisição se tenha um buffer novo.
         memset(request, 'F', 100);
 
+        printf("\n6\n");
+
         //Aceita uma conexão de um cliente.
         client = accept(server, (struct sockaddr *) &caddr, &csize);
+        printf("\n7\n");
         if(client < 0){
             printf("Error while accepting request.");
             return -1;
@@ -72,15 +71,24 @@ int main(){
 
         while(1){
             //Recebe e printa na tela os bytes da requisição do cliente.
+            printf("\n100\n");
             x = recv(client, request, sizeof request, 0);
-
-            if(x<1) break;
-            sendChangesToDatabase(request);
             
-        }
+            if(x<1) break;
+            //char response = sendChangesToDatabase(request);
+            printf("\n2\n");
+            char newResponse[1];
+            //newResponse[0] = response;
+            newResponse[0] = 'A';
+            //printf("\nServidor: %c\n", response);
 
+            send(client, "oi", x, 0);
+            printf("\n3\n");
+        }
+        printf("\n5\n");
         //Fecha a conexão com o cliente.
         closesocket(client);
+        printf("\n4\n");
 
         printf("Request ended.\n");
     }
@@ -90,7 +98,7 @@ int main(){
 
 
 
-void* sendChangesToDatabase(char* requisition){
+char sendChangesToDatabase(char* requisition){
     printf("%s\nENTREI\n", requisition);
 
     WSADATA wsa;
@@ -109,5 +117,10 @@ void* sendChangesToDatabase(char* requisition){
 
     send(client, requisition, (int)strlen(requisition), 0);
 
+    char response[100];
+    int x = recv(client, response, sizeof response, 0);
+
     closesocket(client);
+
+    return response[0];
 }
