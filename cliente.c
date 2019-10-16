@@ -83,7 +83,7 @@ int main(){
 
                     while ((requisicaoFinal[n++] = getchar()) != '\n') ;
 
-                    continue;
+                    
                 }
 
                 while ((requisicaoFinal[n++] = getchar()) != '\n') ;
@@ -121,7 +121,7 @@ int main(){
 
                     while ((requisicaoFinal[n++] = getchar()) != '\n') ;
 
-                    continue;
+                    
                 }
 
                 while ((requisicaoFinal[n++] = getchar()) != '\n') ;
@@ -171,19 +171,44 @@ int main(){
                 while ((requisicaoFinal[n++] = getchar()) != '\n') ;
                 break;
             case '4':
-                requisicaoFinal[0] = 'L';
+                printf("Opcao de listagem escolhida.");
+                requisicaoFinal[n++] = 'L';
+                requisicaoFinal[n++] = '-';
+
+                while ((requisicaoFinal[n++] = getchar()) != '\n') ;
+                n--;
+
+                printf("\nDigite o numero da conta a ser listada:");
+                while ((requisicaoFinal[n++] = getchar()) != '\n') ;
+                n--;
+
+                printf("\nDeseja confirmar? (S/N)\n");
+                while(opcaoConfirmar != 'S' && opcaoConfirmar != 'N'){
+                    opcaoConfirmar = getchar();
+                }
+                
+                if(opcaoConfirmar == 'S'){}
+                else if(opcaoConfirmar == 'N'){
+                    printf("\nTransacao abortada.\n\n");
+                    printf("-------------------------------------------------\n");
+
+                    while ((requisicaoFinal[n++] = getchar()) != '\n') ;
+
+                    continue;
+                }
+
+                while ((requisicaoFinal[n++] = getchar()) != '\n') ;
                 break;
             default:
                 printf("Esta opcao nao existe. Escolha outra.\n");
                 printf("-------------------------------------------------\n\n");
-                continue;
+                
                 break;
         }
 
         //Conecta o cliente ao servidor.
         if(connect(client, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0){
-            printf("Servidor fora do ar! Tente novamente em alguns segundos.\n");
-            continue;
+            //printf("Servidor fora do ar! Tente novamente em alguns segundos.\n");          
         }
 
         //Manda sua requisição ao servidor.
@@ -198,8 +223,10 @@ int main(){
 
         printf("\nServidor: %s\n", response);
 
-        //Fecha a conexão com o servidor.
         close(client);
+        send(client, "", 0, 0);
+        //Fecha a conexão com o servidor.
+        
 
         n = 0;
 

@@ -68,6 +68,7 @@ int main(){
         printf("Started accepting requests.\n");
         //Zera o buffer para que em cada requisição se tenha um buffer novo.
         memset(request, 'F', 100);
+        memset(listValue, 'F', 100);
 
         //Aceita uma conexão de um cliente.
         client = accept(server, (struct sockaddr *) &caddr, &csize);
@@ -225,12 +226,15 @@ char persistChanges(char* requisition){
                 requisitionIterator = 2; 
                 charIterator = 0;
 
-                while(requisition[requisitionIterator] != '-'){
+                while(requisition[requisitionIterator] != 'F'){
                     contaOrigemRequest[charIterator++] = requisition[requisitionIterator++];
                 }
                 contaOrigem = atoi(contaOrigemRequest);
 
                 printf("%d", contaOrigem);
+
+                sprintf(listValue, "%d", contas[contaOrigem - 1]);
+                list = 1;
 
                 return 'C';
                 break;

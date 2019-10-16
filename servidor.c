@@ -56,11 +56,9 @@ int main(){
         //Zera o buffer para que em cada requisição se tenha um buffer novo.
         memset(request, 'F', 100);
 
-        printf("\n6\n");
-
         //Aceita uma conexão de um cliente.
         client = accept(server, (struct sockaddr *) &caddr, &csize);
-        printf("\n7\n");
+
         if(client < 0){
             printf("Error while accepting request.");
             return -1;
@@ -71,24 +69,22 @@ int main(){
 
         while(1){
             //Recebe e printa na tela os bytes da requisição do cliente.
-            printf("\n100\n");
             x = recv(client, request, sizeof request, 0);
-            
+            printf("Depois do recv %d %s\n", x, request);
             if(x<1) break;
-            //char response = sendChangesToDatabase(request);
-            printf("\n2\n");
-            char newResponse[1];
-            //newResponse[0] = response;
-            newResponse[0] = 'A';
-            //printf("\nServidor: %c\n", response);
-
-            send(client, "oi", x, 0);
-            printf("\n3\n");
+            
+            char response = sendChangesToDatabase(request);
+            
+            if(response == 'L'){
+                send(client, listResponse, x, 0);
+            }
+            else{
+                send(client, "C", x, 0);
+            }
+            
         }
-        printf("\n5\n");
         //Fecha a conexão com o cliente.
         closesocket(client);
-        printf("\n4\n");
 
         printf("Request ended.\n");
     }
@@ -96,9 +92,11 @@ int main(){
 	return 0;
 }
 
-
+char listResponse[100];
 
 char sendChangesToDatabase(char* requisition){
+    memset(listResponse, 'F', 100);
+
     printf("%s\nENTREI\n", requisition);
 
     WSADATA wsa;
@@ -122,5 +120,9 @@ char sendChangesToDatabase(char* requisition){
 
     closesocket(client);
 
-    return response[0];
+    if(response[0] == 'C'){
+        return response[0];
+    }
+
+    return 'L';
 }
