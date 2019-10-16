@@ -11,8 +11,8 @@
 
 char sendChangesToDatabase(char* requisition);
 
-//Variáveis da fila global, utilizada para armazenar as requisições até que a thread das pthreads as recolha para uma fila local.
-char queue[1][512];
+//Resposta ao cliente caso seja uma listagem
+char listResponse[100];
 
 int main(){
     
@@ -70,7 +70,7 @@ int main(){
         while(1){
             //Recebe e printa na tela os bytes da requisição do cliente.
             x = recv(client, request, sizeof request, 0);
-            printf("Depois do recv %d %s\n", x, request);
+            
             if(x<1) break;
             
             char response = sendChangesToDatabase(request);
@@ -78,8 +78,11 @@ int main(){
             if(response == 'L'){
                 send(client, listResponse, x, 0);
             }
-            else{
+            else if(response == 'C'){
                 send(client, "C", x, 0);
+            }
+            else{
+                send(client, "E", x, 0);
             }
             
         }
@@ -92,12 +95,12 @@ int main(){
 	return 0;
 }
 
-char listResponse[100];
-
+//Qualquer requisição que chegar ao servidor é mandada ao banco de dados para interpretação (se é possível fazer ou não)
+//Se conecta ao banco de dados para enviar a requisição e receber a resposta.
 char sendChangesToDatabase(char* requisition){
-    memset(listResponse, 'F', 100);
+    printf("Requisicao recebida!\n");
 
-    printf("%s\nENTREI\n", requisition);
+    memset(listResponse, 'F', 100);
 
     WSADATA wsa;
     WSAStartup(MAKEWORD(2,2), &wsa);
@@ -120,8 +123,13 @@ char sendChangesToDatabase(char* requisition){
 
     closesocket(client);
 
+    strncpy(listResponse, response, 100);
+
     if(response[0] == 'C'){
-        return response[0];
+        return 'C';
+    }
+    else if(response[0] == 'E'){
+        return 'E';
     }
 
     return 'L';

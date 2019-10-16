@@ -219,14 +219,23 @@ int main(){
         memset(requisicaoFinal, 'F', 100);
 
         char response[100];
+
+        //Recebe a resposta do servidor, e a interpreta logo abaixo.
         int x = recv(client, response, sizeof response, 0);
 
-        printf("\nServidor: %s\n", response);
+        if(response[0] == 'C'){
+            printf("Requisicao concluida com sucesso!\n");
+        }
+        else if(response[0] == 'E'){
+            printf("A requisicao nao foi concluida.\n");
+        }
+        else{
+            printf("O saldo da conta requerida e de %s reais.\n", response);
+        }
 
         close(client);
+
         send(client, "", 0, 0);
-        //Fecha a conexão com o servidor.
-        
 
         n = 0;
 

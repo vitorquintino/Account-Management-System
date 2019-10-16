@@ -18,8 +18,10 @@ int transfer(int contaOrigem, int contaDestino, int valor);
 //Variáveis da fila global, utilizada para armazenar as requisições até que a thread das pthreads as recolha para uma fila local.
 char queue[1][512];
 
+//Contas em memória do programa, simulando um banco de dados.
 int contas[10];
 
+//Variáveis usadas apenas no caso da opção escolhida pelo cliente ser uma listagem.
 int list = 0;
 char listValue[100];
 
@@ -92,6 +94,7 @@ int main(){
             char newResponse[1];
             newResponse[0] = resultCode;
 
+            //Caso seja uma listagem, a resposta ao servidor muda.
             if(list > 0){
                 send(client, listValue, x, 0);
                 list = 0;
@@ -114,10 +117,10 @@ int main(){
 }
 
 
-
+//Método que faz toda a lógica de persistência dos dados. Controla qual método será chamado baseado na requisição que chegou no servidor.
 char persistChanges(char* requisition){
     if(requisition[1] != 'F'){
-        printf("%c %c %c\n", requisition[0], requisition[2], requisition[4]);
+        //printf("%c %c %c\n", requisition[0], requisition[2], requisition[4]);
 
         int contaOrigem = -1, contaDestino = -1, valor = -1, requisitionIterator = -1, charIterator = -1, depositResponse = -1;
         char functionResponse = 'X';
@@ -231,8 +234,6 @@ char persistChanges(char* requisition){
                 }
                 contaOrigem = atoi(contaOrigemRequest);
 
-                printf("%d", contaOrigem);
-
                 sprintf(listValue, "%d", contas[contaOrigem - 1]);
                 list = 1;
 
@@ -245,6 +246,7 @@ char persistChanges(char* requisition){
     }
 }
 
+//Método que inicializa um número X (aqui são 10) de contas com o saldo 100.
 void* initializeAccounts(){
     int i = 0;
     for(i = 0; i < 10; i++){
@@ -252,6 +254,7 @@ void* initializeAccounts(){
     }
 }
 
+//Método que faz o depósito de uma conta
 int deposit(int conta, int valor){
     if(conta < 0 || valor < 0) return -1;
 
@@ -267,12 +270,12 @@ int deposit(int conta, int valor){
     return 1;
 }
 
+//Método que faz o saque de dinheiro de uma conta
 int withdrawal(int conta, int valor){
     if(conta < 0 || valor < 0) return -1;
 
     int tamanho = (int) (sizeof(contas)/sizeof(contas[0]));
 
-    printf("\n%d %d %d\n", tamanho, conta, valor);
     if((int) (sizeof(contas)/sizeof(contas[0])) < conta){
         return -1;
     }
@@ -286,6 +289,7 @@ int withdrawal(int conta, int valor){
     return 1;
 }
 
+//Método que faz a transferência de dinheiro entre contas
 int transfer(int contaOrigem, int contaDestino, int valor){
     if(contaOrigem < 0 || contaDestino < 0 || valor < 0) return -1;
 
