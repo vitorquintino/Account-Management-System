@@ -7,7 +7,6 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <pthread.h>
 
 char sendChangesToDatabase(char* requisition);
 
