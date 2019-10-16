@@ -83,7 +83,7 @@ int main(){
 
                     while ((requisicaoFinal[n++] = getchar()) != '\n') ;
 
-                    
+                    continue;
                 }
 
                 while ((requisicaoFinal[n++] = getchar()) != '\n') ;
@@ -121,7 +121,7 @@ int main(){
 
                     while ((requisicaoFinal[n++] = getchar()) != '\n') ;
 
-                    
+                    continue;
                 }
 
                 while ((requisicaoFinal[n++] = getchar()) != '\n') ;
@@ -203,12 +203,13 @@ int main(){
                 printf("Esta opcao nao existe. Escolha outra.\n");
                 printf("-------------------------------------------------\n\n");
                 
-                break;
+                continue;
         }
 
         //Conecta o cliente ao servidor.
         if(connect(client, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0){
-            //printf("Servidor fora do ar! Tente novamente em alguns segundos.\n");          
+            //printf("Servidor fora do ar! Tente novamente em alguns segundos.\n");
+            //break;          
         }
 
         //Manda sua requisição ao servidor.
